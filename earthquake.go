@@ -137,6 +137,7 @@ func getcountry(place string) string {
 
 //data with date from stdin
 func getRecordsstdin(url string) []byte {
+	fmt.Println("Gib Anfangs- und Enddatum an. (dd.mm.yyyy)")
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Print("Anfangsdatum: ")
 	scanner.Scan()
