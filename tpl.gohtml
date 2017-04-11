@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Earthquakes</title>
+    <style>
+      table, td, th { border: 1px solid black;}
+      #statistic    {border-collapse: collapse;}
+    </style>
+</head>
+<body>
+  <h1><b>Statistics</b></h1>
+  <p>
+  <table id="statistic">
+    <tr>
+      <td><b>Number of earthquakes</b></td><td><center>{{.Metadata.Count}}</center></td>
+    </tr>
+    <tr>
+      <td><b>Mean magnitude</b></td><td><center>{{.Special.Meanmag}}</center></td>
+    </tr>
+    <tr>
+      <td><b>Region with most earthquakes</b></td><td><center>{{.Special.Countrymost}}: {{.Special.Countrymostint}}</center></td>
+    </tr>
+  </table>
+  </p>
+
+  <h1><b>Individual earthquakes</b></h1>
+  <p>
+  {{range .Features}}
+      <b>{{.Properties.Place}}</b>  {{.Properties.Mag}}<br>
+  {{end}}
+  </p>
+  </body>
+  </html>
