@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quake</title>
+</head>
+
+<body>
+  <h1><b>Individual earthquakes of {{.Special.Country}}</b></h1>
+  <p>
+  {{range .Features}}
+      <b>{{.Properties.Place}}</b>  {{.Properties.Mag}}<br>
+  {{end}}
+  </p>
+</body>
+</html>
