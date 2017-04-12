@@ -26,8 +26,8 @@
 
   <h1><b>Individual earthquakes</b></h1>
   <p>
-  {{range .Features}}
-      <b>{{.Properties.Place}}</b>  {{.Properties.Mag}}<br>
+  {{range .Special.Ort}}
+      <a href="{{.}}">{{.}}</a><br>
   {{end}}
   </p>
   </body>
