@@ -66,12 +66,19 @@ type Quakes struct {
 		Countrymost    string
 		Countrymostint int
 		Meanmag        float64
-		Ort            string
+		Ort            []string
+		Country        string
 	}
 }
 
 func main() {
 	var quakes Quakes
+
+	//parse template
+	tpl, err := template.ParseFiles("tpl.gohtml", "quake.gohtml", "welcome.gohtml")
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	//get data
 	data := getRecordsstdin("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&")
@@ -79,26 +86,26 @@ func main() {
 	//decode data
 	_ = json.Unmarshal(data, &quakes)
 
-	//parse template
-	tpl, err := template.ParseFiles("tpl.gohtml")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	//Filling in Special struct
 	quakes.Special.Meanmag = meanmag(quakes)
 	mapcountry := countrycount(quakes)
 	quakes.Special.Countrymost, quakes.Special.Countrymostint = countrymost(mapcountry)
+	for _, value := range quakes.Features {
+		ort := getcountry(value.Properties.Place)
+		if contains(quakes.Special.Ort, ort) == false {
+			quakes.Special.Ort = append(quakes.Special.Ort, ort)
+		}
+	}
 
 	router := httprouter.New()
 	router.GET("/quakes/", func(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+
 		err := tpl.ExecuteTemplate(w, "tpl.gohtml", quakes)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			log.Fatalln(err)
 		}
 	})
-
 	router.GET("/quakes/:ort", func(w http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		ort := p.ByName("ort")
 		var quakes2 Quakes
@@ -106,14 +113,14 @@ func main() {
 		quakes2.Metadata = quakes.Metadata
 		quakes2.Bbox = quakes.Bbox
 		quakes2.Special = quakes.Special
+		quakes2.Special.Country = ort
 
 		for _, quake := range quakes.Features {
 			if ort == getcountry(quake.Properties.Place) {
 				quakes2.Features = append(quakes2.Features, quake)
 			}
 		}
-
-		err := tpl.ExecuteTemplate(w, "tpl.gohtml", quakes2)
+		err := tpl.ExecuteTemplate(w, "quake.gohtml", quakes2)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			log.Fatalln(err)
@@ -122,6 +129,15 @@ func main() {
 
 	http.ListenAndServe(":8080", router)
 
+}
+
+func contains(slice []string, word string) bool {
+	for _, value := range slice {
+		if word == value {
+			return true
+		}
+	}
+	return false
 }
 
 func getcountry(place string) string {
