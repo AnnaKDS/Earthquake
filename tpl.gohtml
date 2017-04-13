@@ -9,7 +9,32 @@
     </style>
 </head>
 <body>
-  <h1><b>Statistics</b></h1>
+<h1>Earthquakes</h1>
+<p>
+  <div style=float:left>
+    <b>What is an earthquake?</b><br>
+    An earthquake is a shaking of the ground caused by the sudden breaking and movement of large sections (tectonic plates) of the earth's rocky outermost crust. The edges of the tectonic plates are marked by faults (or fractures). Most earthquakes occur along the fault lines when the plates slide past each other or collide against each other.<br>
+  </div>
+</p>
+<br>
+<p>
+  <div style=float:right>
+    <img src="http://www.wissenschaft.de/documents/12054/33283/14-10-13+Erdbeben/eb20a3ce-6d2b-4770-9286-2b67e7750c45?t=1413206925712&imageThumbnail=3" width="244" height="200"><br>
+  </div>
+</p>
+<br>
+<b>Which period of time?</b>
+  <form method="GET">
+      <label for="from">from</label>
+      <input type="text" id="start" name="start">
+      <br>
+      <label for="to">to</label>
+      <input type="text" id="ende" name="ende">
+      <br>
+      <button type="submit">Submit</button>
+  </form>
+
+  <h2><b>Statistics</b></h2>
   <p>
   <table id="statistic">
     <tr>
@@ -24,10 +49,11 @@
   </table>
   </p>
 
-  <h1><b>Individual earthquakes</b></h1>
+
+  <h2><b>Individual earthquakes</b></h2>
   <p>
   {{range .Special.Ort}}
-      <a href="{{.}}">{{.}}</a><br>
+      <a href="quakes/{{.}}">{{.}}</a><br>
   {{end}}
   </p>
   </body>

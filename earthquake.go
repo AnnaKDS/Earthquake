@@ -69,36 +69,42 @@ type Quakes struct {
 		Ort            []string
 		Country        string
 	}
+	Query struct {
+		From string
+		To   string
+	}
 }
 
+var quakes Quakes
+
 func main() {
-	var quakes Quakes
 
 	//parse template
-	tpl, err := template.ParseFiles("tpl.gohtml", "quake.gohtml", "welcome.gohtml")
+	tpl, err := template.ParseFiles("tpl.gohtml", "quake.gohtml")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	//get data
-	data := getRecordsstdin("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&")
-
-	//decode data
-	_ = json.Unmarshal(data, &quakes)
-
-	//Filling in Special struct
-	quakes.Special.Meanmag = meanmag(quakes)
-	mapcountry := countrycount(quakes)
-	quakes.Special.Countrymost, quakes.Special.Countrymostint = countrymost(mapcountry)
-	for _, value := range quakes.Features {
-		ort := getcountry(value.Properties.Place)
-		if contains(quakes.Special.Ort, ort) == false {
-			quakes.Special.Ort = append(quakes.Special.Ort, ort)
-		}
-	}
-
 	router := httprouter.New()
-	router.GET("/quakes/", func(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	router.GET("/quakes", func(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+
+		quakes.Query.From = req.FormValue("start")
+		quakes.Query.To = req.FormValue("ende")
+
+		//get data
+		data := getRecords("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&", quakes.Query.From, quakes.Query.To)
+		//decode data
+		_ = json.Unmarshal(data, &quakes)
+		//Filling in Special struct
+		quakes.Special.Meanmag = meanmag(quakes)
+		mapcountry := countrycount(quakes)
+		quakes.Special.Countrymost, quakes.Special.Countrymostint = countrymost(mapcountry)
+		for _, value := range quakes.Features {
+			ort := getcountry(value.Properties.Place)
+			if contains(quakes.Special.Ort, ort) == false {
+				quakes.Special.Ort = append(quakes.Special.Ort, ort)
+			}
+		}
 
 		err := tpl.ExecuteTemplate(w, "tpl.gohtml", quakes)
 		if err != nil {
@@ -106,6 +112,7 @@ func main() {
 			log.Fatalln(err)
 		}
 	})
+
 	router.GET("/quakes/:ort", func(w http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		ort := p.ByName("ort")
 		var quakes2 Quakes
@@ -114,7 +121,7 @@ func main() {
 		quakes2.Bbox = quakes.Bbox
 		quakes2.Special = quakes.Special
 		quakes2.Special.Country = ort
-
+		quakes2.Query = quakes.Query
 		for _, quake := range quakes.Features {
 			if ort == getcountry(quake.Properties.Place) {
 				quakes2.Features = append(quakes2.Features, quake)
@@ -179,6 +186,10 @@ func getRecordsstdin(url string) []byte {
 func getRecords(url string, start string, ende string) []byte {
 	start = parsedate(start)
 	ende = parsedate(ende)
+	if start == "" || ende == "" {
+		start = "01.01.2017"
+		ende = "02.01.2017"
+	}
 
 	resp, err := http.Get(url + "starttime=" + start + "&endtime=" + ende)
 	if err != nil {
@@ -197,7 +208,6 @@ func getRecords(url string, start string, ende string) []byte {
 func parsedate(datum string) string {
 	date := strings.Split(datum, ".")
 	return date[2] + "-" + date[1] + "-" + date[0]
-
 }
 
 //mean magnitude

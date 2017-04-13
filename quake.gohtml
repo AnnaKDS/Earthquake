@@ -6,7 +6,8 @@
 </head>
 
 <body>
-  <h1><b>Individual earthquakes of {{.Special.Country}}</b></h1>
+
+  <h1><b>Individual earthquakes of {{.Special.Country}} from {{.Query.From}} to {{.Query.To}}</b></h1>
   <p>
   {{range .Features}}
       <b>{{.Properties.Place}}</b>  {{.Properties.Mag}}<br>
